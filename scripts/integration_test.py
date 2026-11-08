@@ -14,10 +14,23 @@ from openflow.models import ensure_model
 from openflow.text import tidy_text
 
 
+PROGRESS = Path("integration-progress.txt")
+
+
+def checkpoint(message: str) -> None:
+    print(message, flush=True)
+    with PROGRESS.open("a", encoding="utf-8") as stream:
+        stream.write(message + "\n")
+        stream.flush()
+
+
 def main() -> None:
+    checkpoint("integration start")
     with tempfile.TemporaryDirectory(prefix="openflow-integration-") as directory:
         os.environ["OPENFLOW_DATA_DIR"] = directory
+        checkpoint("downloading tiny model")
         model = ensure_model("tiny-q5_1", lambda done, total: None)
+        checkpoint(f"model verified: {model.stat().st_size} bytes")
         request = urllib.request.Request(
             "https://api.github.com/repos/ggml-org/whisper.cpp/contents/samples/jfk.wav",
             headers={"Accept": "application/vnd.github+json", "User-Agent": "OpenFlow-CI"})
@@ -28,9 +41,12 @@ def main() -> None:
         with wave.open(str(path), "rb") as audio:
             assert audio.getframerate() == 16000 and audio.getnchannels() == 1
             pcm = np.frombuffer(audio.readframes(audio.getnframes()), dtype="<i2")
+        checkpoint("loading native engine")
         engine = WhisperEngine()
         engine.load("tiny-q5_1", __import__("threading").Event(), threads=4)
+        checkpoint("native engine loaded")
         result = engine.transcribe(pcm.astype(np.float32) / 32768.0, "en")
+        checkpoint("native transcription returned")
         text = tidy_text(result.text, fillers=False)
         print("Public JFK sample:", text)
         assert "ask not" in text.lower(), text

@@ -15,6 +15,17 @@ from . import APP_NAME, __version__
 from .config import app_directory
 
 
+def register_fonts() -> str:
+    from PySide6.QtGui import QFontDatabase
+    family = "DejaVu Sans"
+    directory = Path(__file__).resolve().parent / "assets" / "fonts"
+    for filename in ("DejaVuSans.ttf", "DejaVuSans-Bold.ttf"):
+        path = directory / filename
+        if path.exists() and QFontDatabase.addApplicationFont(str(path)) < 0:
+            logging.getLogger(__name__).warning("Could not register bundled font %s", filename)
+    return family
+
+
 def configure_logging() -> None:
     directory = app_directory()
     directory.mkdir(parents=True, exist_ok=True)
@@ -57,6 +68,8 @@ def render_preview(output: str) -> int:
         from .ui.main_window import MainWindow
         app = QApplication([])
         app.setStyle("Fusion")
+        from PySide6.QtGui import QFont
+        app.setFont(QFont(register_fonts(), 10))
         window = MainWindow(preview=True)
         window.resize(1160, 880)
         window.show()
@@ -92,7 +105,7 @@ def main(argv: list[str] | None = None) -> int:
     app.setApplicationVersion(__version__)
     app.setOrganizationName("OpenFlow")
     app.setStyle("Fusion")
-    app.setFont(QFont("Segoe UI" if os.name == "nt" else "DejaVu Sans", 10))
+    app.setFont(QFont(register_fonts(), 10))
     palette = QPalette()
     for role, color in ((QPalette.Window, "#0B111B"), (QPalette.WindowText, "#E8EFF7"),
                         (QPalette.Base, "#0E1824"), (QPalette.AlternateBase, "#172536"),

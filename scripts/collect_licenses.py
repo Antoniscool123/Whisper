@@ -57,6 +57,7 @@ def main() -> None:
     python_license = Path(sys.base_prefix) / "LICENSE.txt"
     if python_license.is_file():
         shutil.copy2(python_license, OUT / "python.txt")
+    shutil.copy2(ROOT / "openflow" / "assets" / "fonts" / "LICENSE_DEJAVU", OUT / "DejaVu-fonts.txt")
     shutil.copy2(ROOT / "LICENSE", OUT / "OpenFlow-MIT.txt")
     shutil.copy2(ROOT / "THIRD_PARTY_NOTICES.md", OUT / "THIRD_PARTY_NOTICES.md")
     (OUT / "INDEX.txt").write_text("Bundled license notices:\n" + "\n".join(index) + "\n", encoding="utf-8")

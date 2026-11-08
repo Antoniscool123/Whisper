@@ -59,7 +59,9 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python scripts/github_blob.py integration-error.txt | tee integration-error-delivery.json
+        run: |
+          if [ -f integration-error.txt ]; then python scripts/github_blob.py integration-error.txt | tee integration-error-delivery.json; fi
+          if [ -f integration-progress.txt ]; then python scripts/github_blob.py integration-progress.txt | tee integration-progress-delivery.json; fi
       - name: Build native Windows x64 executable
         run: ./scripts/build_windows.ps1
       - name: Smoke test the packaged executable

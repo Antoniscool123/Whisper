@@ -15,6 +15,7 @@ OpenFlow's original code and icon are distributed under the MIT license in `LICE
 | tqdm | Binding dependency | https://github.com/tqdm/tqdm — MPL-2.0 and MIT portions |
 | platformdirs | Binding dependency | https://github.com/tox-dev/platformdirs — MIT |
 | PyInstaller | Executable bootloader/build tool | https://github.com/pyinstaller/pyinstaller — GPL-2.0-or-later with bootloader exception; the exception permits distributing the combined application under its own license |
+| DejaVu Sans fonts | Bundled UI font | https://dejavu-fonts.github.io/ — Bitstream Vera / DejaVu license, included in `openflow/assets/fonts/LICENSE_DEJAVU` |
 | OpenAI Whisper model weights | Speech recognition | https://github.com/openai/whisper and https://huggingface.co/ggerganov/whisper.cpp — MIT model release; downloaded separately |
 
 The build collects upstream copyright and license texts from the installed Python distributions, plus LGPL/GPL, whisper.cpp and PortAudio notices, into `openflow/assets/licenses` inside the executable. Use **Settings → Third-party licenses** to open them. Upstream projects remain the authoritative source for their license texts and corresponding source code.
