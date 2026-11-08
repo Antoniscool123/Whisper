@@ -1,22 +1,55 @@
 {
-  "run_id": "42471962072",
-  "run_url": "https://github.com/Antoniscool123/Whisper/actions/runs/42471962072",
-  "commit": "a842c7fedb994ea6fd2099480a38f02c3bea6c10",
-  "executable": null,
+  "run_id": "42476546199",
+  "run_url": "https://github.com/Antoniscool123/Whisper/actions/runs/42476546199",
+  "commit": "44686a0b0918672627e206f0e60ada820f343670",
+  "executable": {
+    "repository": "Antoniscool123/Whisper",
+    "filename": "OpenFlow.exe",
+    "bytes": 49971539,
+    "sha256": "5cf07e054490ebac08aa8c38080ec6d09b78fb52d296deb765b41d3a8f0394ed",
+    "chunks": [
+      {
+        "blob": "b09276955abfe2b393f1c3082d876a7a19730d5b",
+        "bytes": 8388608,
+        "sha256": "30e5a77bbb5140695876c5f861ee3a35cf31c95f72c4ce7328e29a47227a2bce"
+      },
+      {
+        "blob": "1f48867304b082fee02325c0b95a6ce9ee3d1dbc",
+        "bytes": 8388608,
+        "sha256": "9dfbac4d974427e5408bc8acd8e0c82ee6e3ae31f3a71110af98d8743e7d6bf0"
+      },
+      {
+        "blob": "4ffc6e9514abd19969db614810612f75051cbb16",
+        "bytes": 8388608,
+        "sha256": "c56f6c0548a11e1bd89a47cc8b60a30658d74eb682bd5598219bf555c5b06822"
+      },
+      {
+        "blob": "94e8eff38d78040546605272a79b8621f256a340",
+        "bytes": 8388608,
+        "sha256": "8118f629f03a0b0affdb9d967bc6ad0d1c9e7a0e49e2e14166254cca0e29d6f9"
+      },
+      {
+        "blob": "a3cf8fe2e4320016cba22f6635daa82499ebd560",
+        "bytes": 8388608,
+        "sha256": "8ad262e36e0c1925a65d0aebf17855ee94da426dbd9074ec61722098c37062e3"
+      },
+      {
+        "blob": "a10f58b7dace8bb2d09ecaa70f0137029ab41b26",
+        "bytes": 8028499,
+        "sha256": "b0de9a0a5c1824b4efa49d26e9377a048f638a474a3ec44e844d8969c6f5b0a2"
+      }
+    ]
+  },
   "preview": {
     "repository": "Antoniscool123/Whisper",
-    "blob": "416a65dad1788a9d682bdb0f94208ab3e3d6955a",
     "filename": "screenshot.png",
-    "bytes": 85284,
-    "sha256": "4c475bfab1113d35831cc9193776a1d30b7adaccdd6c920e5974b5ff35707b69"
+    "bytes": 85463,
+    "sha256": "4641c1f6d1521f52d22c6b68c7d26db6dc45508179d4928110700919780e6e3b",
+    "blob": "7e5fd0529a20c538313a3de00627fe1eb0ef638d"
   },
   "diagnostic": null,
   "progress": null,
-  "output": {
-    "repository": "Antoniscool123/Whisper",
-    "blob": "a419bbd2afb4aa67dbe2f990cd8f0f1574d374ac",
-    "filename": "integration-output.txt",
-    "bytes": 213,
-    "sha256": "83da75c34d6935c977182844c10e2024ebbb75b9990db5a47e50a97e04a72bde"
-  }
+  "output": null,
+  "executable_error": null,
+  "preview_error": null
 }
