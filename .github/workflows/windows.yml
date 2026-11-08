@@ -3,7 +3,7 @@ name: Build and test Windows app
 on:
   push:
     branches: [arena/96f0627e-whisper]
-    paths-ignore: ['README.md', 'docs/**', 'LICENSE', 'NOTICE.md']
+    paths-ignore: ['README.md', 'docs/**', 'LICENSE', 'NOTICE.md', 'THIRD_PARTY_NOTICES.md', 'build-delivery.json']
   workflow_dispatch:
     inputs:
       publish:
@@ -59,7 +59,7 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python scripts/github_blob.py integration-error.txt
+        run: python scripts/github_blob.py integration-error.txt | tee integration-error-delivery.json
       - name: Build native Windows x64 executable
         run: ./scripts/build_windows.ps1
       - name: Smoke test the packaged executable
@@ -96,6 +96,12 @@ jobs:
         run: |
           python scripts/github_blob.py dist/OpenFlow.exe | tee dist/delivery.json
           python scripts/github_blob.py docs/screenshot.png | tee dist/preview-delivery.json
+      - name: Record delivery metadata for the workspace
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/record_delivery.py
       - name: Publish release
         if: github.event_name == 'workflow_dispatch' && inputs.publish
         shell: bash
