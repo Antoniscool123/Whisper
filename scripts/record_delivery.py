@@ -29,7 +29,17 @@ def api(path: str, method: str = "GET", payload: dict | None = None):
 
 def optional(path: str):
     file = Path(path)
-    return json.loads(file.read_text()) if file.exists() else None
+    if not file.exists():
+        return None
+    try:
+        return json.loads(file.read_text(encoding="utf-8-sig"))
+    except (ValueError, OSError):
+        return None
+
+
+def error_text(path: str):
+    file = Path(path)
+    return file.read_text(encoding="utf-8", errors="replace")[:2000] if file.exists() else None
 
 
 def main() -> None:
@@ -41,7 +51,9 @@ def main() -> None:
                 "preview": optional("preview-delivery.json") or optional("dist/preview-delivery.json"),
                 "diagnostic": optional("integration-error-delivery.json"),
                 "progress": optional("integration-progress-delivery.json"),
-                "output": optional("integration-output-delivery.json")}
+                "output": optional("integration-output-delivery.json"),
+                "executable_error": error_text("blob-output.txt") if not optional("dist/delivery.json") else None,
+                "preview_error": error_text("preview-output.txt") if not optional("dist/preview-delivery.json") else None}
     path = "/build-delivery.json"
     existing = api(f"/repos/{repo}/contents{path}?ref={urllib.parse.quote(branch, safe='')}")
     content = base64.b64encode((json.dumps(delivery, indent=2) + "\n").encode()).decode()

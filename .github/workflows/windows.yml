@@ -98,12 +98,20 @@ jobs:
           retention-days: 14
           compression-level: 0
       - name: Prepare binary for workspace delivery
-        shell: bash
+        shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          python scripts/github_blob.py dist/OpenFlow.exe | tee dist/delivery.json
-          python scripts/github_blob.py docs/screenshot.png | tee dist/preview-delivery.json
+          python scripts/github_blob.py dist/OpenFlow.exe *> blob-output.txt
+          $code = $LASTEXITCODE
+          Get-Content blob-output.txt
+          if ($code -ne 0) { exit $code }
+          Copy-Item blob-output.txt dist/delivery.json
+          python scripts/github_blob.py docs/screenshot.png *> preview-output.txt
+          $code = $LASTEXITCODE
+          Get-Content preview-output.txt
+          if ($code -ne 0) { exit $code }
+          Copy-Item preview-output.txt dist/preview-delivery.json
       - name: Record delivery metadata for the workspace
         if: always()
         shell: bash
