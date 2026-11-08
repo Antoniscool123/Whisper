@@ -55,7 +55,7 @@ jobs:
       - name: Real Whisper engine integration test
         run: python scripts/integration_test.py
       - name: Upload integration diagnostic
-        if: failure() && hashFiles('integration-error.txt') != ''
+        if: failure()
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
