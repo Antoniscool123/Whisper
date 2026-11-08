@@ -119,11 +119,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: python scripts/record_delivery.py
       - name: Publish release
-        if: github.event_name == 'workflow_dispatch' && inputs.publish
+        if: (github.event_name == 'workflow_dispatch' && inputs.publish) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[release]'))
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ inputs.release_tag }}
+          TAG: ${{ inputs.release_tag || 'v1.0.0' }}
         run: |
           [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid release tag'; exit 1; }
           cp dist/SHA256SUMS.txt SHA256SUMS.txt
