@@ -55,7 +55,7 @@ jobs:
       - name: Real Whisper engine integration test
         shell: pwsh
         run: |
-          python -X faulthandler scripts/integration_test.py *> integration-output.txt
+          python -X faulthandler -m scripts.integration_test *> integration-output.txt
           $code = $LASTEXITCODE
           Get-Content integration-output.txt
           exit $code

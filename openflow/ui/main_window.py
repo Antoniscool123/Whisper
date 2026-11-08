@@ -125,6 +125,7 @@ class MainWindow(QMainWindow):
             self.latest.setPlainText("Hej! Det her er OpenFlow. Jeg kan skrive med min stemme, uden abonnement og uden at sende min lyd til en server.")
             self.detected.setText("Dansk · eksempeltekst / sample text")
             self._update_ui()
+            self.mic_button.setEnabled(True)
             return
         self.worker.start()
         self.hotkeys.start()
@@ -173,7 +174,7 @@ class MainWindow(QMainWindow):
         brand.addWidget(label("OpenFlow", "Brand"))
         brand.addStretch()
         layout.addLayout(brand)
-        layout.addWidget(label("YOUR VOICE. YOUR WORDS.", "Eyebrow"))
+        layout.addWidget(label("FREE LOCAL DICTATION", "Eyebrow"))
         layout.addSpacing(30)
         self.nav_buttons: list[QPushButton] = []
         for index, (name, icon_name) in enumerate((("Dictation", "mic"), ("History", "history"),
@@ -193,7 +194,7 @@ class MainWindow(QMainWindow):
         top.addWidget(label("Private by design", "Accent"))
         top.addStretch()
         privacy.layout_.addLayout(top)
-        privacy.layout_.addWidget(label("Your voice stays on this PC.\nNo cloud. No compromises.", "Small", True))
+        privacy.layout_.addWidget(label("Your voice stays on this PC.\nNo cloud transcription.", "Small", True))
         layout.addWidget(privacy)
         layout.addSpacing(10)
         layout.addWidget(label("100% FREE  ·  v" + __version__, "Eyebrow"))
