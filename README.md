@@ -4,6 +4,8 @@
 
 OpenFlow is an independent, open-source alternative inspired by the Wispr Flow dictation workflow. It is not affiliated with Wispr or OpenAI. It uses OpenAI's open Whisper models through `whisper.cpp`, entirely on your CPU.
 
+[Dansk vejledning](docs/DA.md)
+
 ![OpenFlow desktop interface](docs/screenshot.png)
 
 *Interface preview with sample Danish text. Your own transcripts are produced locally from your microphone.*
