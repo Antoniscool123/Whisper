@@ -53,7 +53,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: python scripts/github_blob.py docs/screenshot.png | tee preview-delivery.json
       - name: Real Whisper engine integration test
-        run: python scripts/integration_test.py
+        shell: pwsh
+        run: |
+          python -X faulthandler scripts/integration_test.py *> integration-output.txt
+          $code = $LASTEXITCODE
+          Get-Content integration-output.txt
+          exit $code
       - name: Upload integration diagnostic
         if: failure()
         shell: bash
@@ -62,6 +67,7 @@ jobs:
         run: |
           if [ -f integration-error.txt ]; then python scripts/github_blob.py integration-error.txt | tee integration-error-delivery.json; fi
           if [ -f integration-progress.txt ]; then python scripts/github_blob.py integration-progress.txt | tee integration-progress-delivery.json; fi
+          if [ -f integration-output.txt ]; then python scripts/github_blob.py integration-output.txt | tee integration-output-delivery.json; fi
       - name: Build native Windows x64 executable
         run: ./scripts/build_windows.ps1
       - name: Smoke test the packaged executable

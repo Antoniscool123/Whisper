@@ -40,7 +40,8 @@ def main() -> None:
                 "commit": os.environ["GITHUB_SHA"], "executable": optional("dist/delivery.json"),
                 "preview": optional("preview-delivery.json") or optional("dist/preview-delivery.json"),
                 "diagnostic": optional("integration-error-delivery.json"),
-                "progress": optional("integration-progress-delivery.json")}
+                "progress": optional("integration-progress-delivery.json"),
+                "output": optional("integration-output-delivery.json")}
     path = "/build-delivery.json"
     existing = api(f"/repos/{repo}/contents{path}?ref={urllib.parse.quote(branch, safe='')}")
     content = base64.b64encode((json.dumps(delivery, indent=2) + "\n").encode()).decode()
