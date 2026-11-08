@@ -40,4 +40,11 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception:
+        import traceback
+        detail = traceback.format_exc()
+        Path("integration-error.txt").write_text(detail, encoding="utf-8")
+        print(detail)
+        raise

@@ -11,6 +11,8 @@ from pathlib import Path
 from typing import Callable
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from . import __version__
 from .config import app_directory, atomic_json
@@ -134,6 +136,9 @@ def ensure_model(model_id: str, progress: Progress | None = None,
     final, partial = model_path(model_id), model_path(model_id).with_suffix(".bin.part")
     with requests.Session() as session:
         session.headers.update({"User-Agent": f"OpenFlow/{__version__}", "Accept-Encoding": "identity"})
+        retries = Retry(total=3, backoff_factor=1, status_forcelist=(429, 500, 502, 503, 504),
+                        allowed_methods=frozenset({"GET"}), respect_retry_after_header=True)
+        session.mount("https://", HTTPAdapter(max_retries=retries))
         manifest = _fetch_manifest(session, spec)
         total = manifest["size"]
         if final.exists():

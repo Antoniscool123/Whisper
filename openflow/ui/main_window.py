@@ -463,6 +463,9 @@ class MainWindow(QMainWindow):
         folder = button("Open data folder", None, "Ghost")
         folder.clicked.connect(self._open_folder)
         privacy.layout_.addWidget(folder, 0, Qt.AlignLeft)
+        licenses = button("Third-party licenses", None, "Ghost")
+        licenses.clicked.connect(self._open_licenses)
+        privacy.layout_.addWidget(licenses, 0, Qt.AlignLeft)
         layout.addWidget(privacy)
         layout.addWidget(label("Windows 10/11, 64-bit. Apps running as administrator may require OpenFlow to run as administrator too. Ctrl+Alt+Escape cancels recording or transcription.", "Small", True))
         layout.addStretch()
@@ -636,6 +639,17 @@ class MainWindow(QMainWindow):
         app_directory().mkdir(parents=True, exist_ok=True)
         QDesktopServices.openUrl(QUrl.fromLocalFile(str(app_directory())))
 
+    def _open_licenses(self) -> None:
+        import sys
+        base = Path(getattr(sys, "_MEIPASS", ASSETS.parent.parent))
+        path = base / "openflow" / "assets" / "licenses"
+        if not path.exists():
+            path = ASSETS / "licenses"
+        if path.exists():
+            QDesktopServices.openUrl(QUrl.fromLocalFile(str(path)))
+        else:
+            QDesktopServices.openUrl(QUrl("https://github.com/Antoniscool123/Whisper/blob/main/THIRD_PARTY_NOTICES.md"))
+
     # ----- model lifecycle --------------------------------------------------------
     def _download_model(self) -> None:
         if self.recording or self.worker_state != "idle":
@@ -744,7 +758,12 @@ class MainWindow(QMainWindow):
             return
         self.recording = False
         self.meter_timer.stop()
-        audio = self.recorder.stop()
+        try:
+            audio = self.recorder.stop()
+        except Exception as exc:
+            self._notice(f"Could not finish recording: {exc}")
+            self._update_ui()
+            return
         self.mic_button.setIcon(make_icon("mic", "#0B302B", 34))
         self.waveform.push(0, False)
         if self.tray:
@@ -897,7 +916,7 @@ class MainWindow(QMainWindow):
         self.mic_button.setEnabled(not self.preview and (self.recording or (ready and not busy and not self.pasting)))
         self.mic_button.setProperty("state", "recording" if self.recording else "idle")
         self.mic_button.style().unpolish(self.mic_button); self.mic_button.style().polish(self.mic_button)
-        self.language_combo.setEnabled(ready and not busy and not self.recording)
+        self.language_combo.setEnabled(not busy and not self.recording)
         for widget in self.busy_controls:
             widget.setEnabled(not busy and not self.recording and not self.pending_remove)
         self.startup_check.setEnabled(os.name == "nt")

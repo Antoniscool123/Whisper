@@ -28,6 +28,7 @@ class Session:
         self.headers = {}
     def __enter__(self): return self
     def __exit__(self, *args): pass
+    def mount(self, *args, **kwargs): pass
     def get(self, url, **kwargs):
         if url == models.MODEL_API:
             return Response({"sha": "a" * 40})

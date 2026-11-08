@@ -47,8 +47,19 @@ jobs:
         run: python scripts/make_icon.py
       - name: Render desktop interface
         run: python app.py --render-preview docs/screenshot.png
+      - name: Prepare interface preview for workspace delivery
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/github_blob.py docs/screenshot.png | tee preview-delivery.json
       - name: Real Whisper engine integration test
         run: python scripts/integration_test.py
+      - name: Upload integration diagnostic
+        if: failure() && hashFiles('integration-error.txt') != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/github_blob.py integration-error.txt
       - name: Build native Windows x64 executable
         run: ./scripts/build_windows.ps1
       - name: Smoke test the packaged executable

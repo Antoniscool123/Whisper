@@ -87,20 +87,21 @@ class WhisperEngine:
                 raise Cancelled("Transcription cancelled")
             # Greedy sampling with whisper.cpp's fallback safeguards is fast and
             # avoids retaining text from a previous, unrelated dictation.
-            segments = self.model.transcribe(
-                audio, language=detected, translate=False, no_context=True,
-                single_segment=False, no_timestamps=True, print_progress=False,
-                print_realtime=False, print_timestamps=False, suppress_nst=True,
-                initial_prompt=hints.strip()[:1000] or None,
-                carry_initial_prompt=False, abort_callback=lambda: bool(cancel and cancel.is_set()),
-            )
+            options = dict(language=detected, translate=False, no_context=True,
+                           single_segment=False, no_timestamps=True, print_progress=False,
+                           print_realtime=False, print_timestamps=False, suppress_nst=True,
+                           carry_initial_prompt=False,
+                           abort_callback=lambda: bool(cancel and cancel.is_set()))
+            if hints.strip():
+                options["initial_prompt"] = hints.strip()[:1000]
+            segments = self.model.transcribe(audio, **options)
             if cancel and cancel.is_set():
                 raise Cancelled("Transcription cancelled")
             text = " ".join(segment.text.strip() for segment in segments).strip()
             # Suppress well-known silence hallucinations rather than type them.
             normalized = text.casefold().strip(" .,!?'\"")
-            if normalized in {"thank you", "thanks for watching", "tak fordi du så med",
-                              "undertekster af", "amara.org", "you", "bye", "tak"} and float(np.sqrt(np.mean(audio ** 2))) < 0.015:
+            if normalized in {"thanks for watching", "tak fordi du så med",
+                              "undertekster af", "amara.org", "subtitles by the amara.org community"} and float(np.sqrt(np.mean(audio ** 2))) < 0.015:
                 text = ""
             return Transcript(text, detected, probability, seconds, time.monotonic() - started)
 

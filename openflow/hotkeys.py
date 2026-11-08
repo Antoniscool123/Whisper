@@ -16,7 +16,7 @@ class Hotkey:
 
 HOTKEYS = {
     "right_ctrl": Hotkey("Hold Right Ctrl", frozenset({"ctrl_r"})),
-    "ctrl_alt": Hotkey("Hold Ctrl + Alt", frozenset({"ctrl", "alt"})),
+    "ctrl_win": Hotkey("Hold Ctrl + Win", frozenset({"ctrl", "win"})),
     "ctrl_shift": Hotkey("Hold Ctrl + Shift", frozenset({"ctrl", "shift"})),
     "f8": Hotkey("Hold F8", frozenset({"f8"})),
 }

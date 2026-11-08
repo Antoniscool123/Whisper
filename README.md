@@ -38,7 +38,7 @@ The model is deliberately not bundled into the executable, keeping the download 
 | Cancel recording / transcription | **Ctrl + Alt + Escape** |
 | Paste a copied transcript manually | **Ctrl + V** |
 
-Other hold shortcuts: Ctrl+Alt, Ctrl+Shift, or F8. Right Ctrl is the default to reduce shortcut conflicts. On Danish keyboards, AltGr can send Ctrl+Alt, so avoid the Ctrl+Alt hold option if you use AltGr frequently.
+Other hold shortcuts: Ctrl+Win, Ctrl+Shift, or F8. Right Ctrl is the default to reduce shortcut conflicts and avoids Danish AltGr (Ctrl+Alt) combinations.
 
 OpenFlow remembers the window where you started speaking. If focus changes while you speak, it **copies instead of pasting into the wrong app**. You can edit the transcript in OpenFlow and use **Insert into app** to return to the previous external window. Text insertion uses the clipboard and sends Ctrl+V; the previous *text* clipboard is restored when possible. Clipboard managers may retain copied text, and non-text clipboard contents cannot be restored.
 

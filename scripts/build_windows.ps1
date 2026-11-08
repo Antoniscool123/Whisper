@@ -5,6 +5,7 @@ python -c "import sys,struct; assert sys.version_info[:2]==(3,11) and struct.cal
 python -m pip install --upgrade pip
 python -m pip install -r requirements-build.txt
 python scripts/make_icon.py
+python scripts/collect_licenses.py
 python -m PyInstaller --clean --noconfirm openflow.spec
 if (!(Test-Path "dist/OpenFlow.exe")) { throw "OpenFlow.exe was not produced" }
 $hash = (Get-FileHash "dist/OpenFlow.exe" -Algorithm SHA256).Hash.ToLower()

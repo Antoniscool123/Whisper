@@ -17,7 +17,7 @@ OpenFlow's original code and icon are distributed under the MIT license in `LICE
 | PyInstaller | Executable bootloader/build tool | https://github.com/pyinstaller/pyinstaller — GPL-2.0-or-later with bootloader exception; the exception permits distributing the combined application under its own license |
 | OpenAI Whisper model weights | Speech recognition | https://github.com/openai/whisper and https://huggingface.co/ggerganov/whisper.cpp — MIT model release; downloaded separately |
 
-The installed Python distributions include their upstream copyright and license texts in their `*.dist-info` metadata. The build also packages available Qt license files. Upstream projects remain the authoritative source for their license texts and corresponding source code.
+The build collects upstream copyright and license texts from the installed Python distributions, plus LGPL/GPL, whisper.cpp and PortAudio notices, into `openflow/assets/licenses` inside the executable. Use **Settings → Third-party licenses** to open them. Upstream projects remain the authoritative source for their license texts and corresponding source code.
 
 ## Qt / PySide6 LGPL notice
 

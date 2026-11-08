@@ -21,9 +21,9 @@ def test_hold_right_ctrl_ignores_repeat():
 
 
 def test_chord_requires_both_keys():
-    state = ChordState(HOTKEYS["ctrl_alt"].keys)
+    state = ChordState(HOTKEYS["ctrl_win"].keys)
     assert state.down("ctrl") is False
-    assert state.down("alt") is True
+    assert state.down("win") is True
     assert state.up("ctrl") is True
     state.reset()
     assert not state.triggered and not state.pressed

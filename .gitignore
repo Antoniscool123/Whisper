@@ -11,3 +11,6 @@ models/
 *.log
 .DS_Store
 preview-local.png
+openflow/assets/licenses/
+integration-error.txt
+preview-delivery.json
