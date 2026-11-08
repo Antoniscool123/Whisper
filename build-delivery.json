@@ -1,14 +1,15 @@
 {
-  "run_id": "42471597916",
-  "run_url": "https://github.com/Antoniscool123/Whisper/actions/runs/42471597916",
-  "commit": "1c15b02c0b3b27692f11ce2c68a0a6a8e1484feb",
+  "run_id": "42471724062",
+  "run_url": "https://github.com/Antoniscool123/Whisper/actions/runs/42471724062",
+  "commit": "d27f04c9f5372fcf618e4b1018cca551e3b5fbde",
   "executable": null,
   "preview": {
     "repository": "Antoniscool123/Whisper",
-    "blob": "c0d3804af6f0aa571cbce7c3d59db18e40372e35",
+    "blob": "416a65dad1788a9d682bdb0f94208ab3e3d6955a",
     "filename": "screenshot.png",
-    "bytes": 31320,
-    "sha256": "cfc724dd3342c379c1d660fe1e94f176eb7e87ec1d8a101be62d987ba4936eef"
+    "bytes": 85284,
+    "sha256": "4c475bfab1113d35831cc9193776a1d30b7adaccdd6c920e5974b5ff35707b69"
   },
-  "diagnostic": null
+  "diagnostic": null,
+  "progress": null
 }
