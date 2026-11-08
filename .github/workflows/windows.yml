@@ -1,0 +1,135 @@
+name: Build and test Windows app
+
+on:
+  push:
+    branches: [arena/96f0627e-whisper]
+    paths-ignore: ['README.md', 'docs/**', 'LICENSE', 'NOTICE.md', 'THIRD_PARTY_NOTICES.md', 'build-delivery.json']
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the verified executable as a GitHub Release
+        type: boolean
+        default: false
+      release_tag:
+        description: Release tag (only used when publish is true)
+        type: string
+        default: v1.0.0
+
+permissions:
+  contents: write
+
+concurrency:
+  group: windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          architecture: x64
+          cache: pip
+          cache-dependency-path: 'requirements*.txt'
+      - name: Install pinned dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-build.txt -r requirements-dev.txt
+          python -m pip check
+      - name: Static checks and unit tests
+        run: |
+          python -m ruff check openflow app.py scripts tests --select E9,F63,F7,F82
+          python -m pytest
+      - name: Generate original app icon
+        run: python scripts/make_icon.py
+      - name: Render desktop interface
+        run: python app.py --render-preview docs/screenshot.png
+      - name: Prepare interface preview for workspace delivery
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/github_blob.py docs/screenshot.png | tee preview-delivery.json
+      - name: Real Whisper engine integration test
+        shell: pwsh
+        run: |
+          python -X faulthandler -m scripts.integration_test *> integration-output.txt
+          $code = $LASTEXITCODE
+          Get-Content integration-output.txt
+          exit $code
+      - name: Upload integration diagnostic
+        if: failure()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -f integration-error.txt ]; then python scripts/github_blob.py integration-error.txt | tee integration-error-delivery.json; fi
+          if [ -f integration-progress.txt ]; then python scripts/github_blob.py integration-progress.txt | tee integration-progress-delivery.json; fi
+          if [ -f integration-output.txt ]; then python scripts/github_blob.py integration-output.txt | tee integration-output-delivery.json; fi
+      - name: Build native Windows x64 executable
+        run: ./scripts/build_windows.ps1
+      - name: Smoke test the packaged executable
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath "$PWD/dist/OpenFlow.exe" -ArgumentList '--smoke-test','dist/smoke-result.json' -WorkingDirectory "$PWD" -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "Packaged smoke test exited $($p.ExitCode)" }
+          $result = Get-Content dist/smoke-result.json -Raw | ConvertFrom-Json
+          if (!$result.ok -or !$result.danish -or !$result.frozen) { throw "Invalid smoke-test result" }
+          Get-Content dist/smoke-result.json
+          $p = Start-Process -FilePath "$PWD/dist/OpenFlow.exe" -ArgumentList '--render-preview','dist/packaged-preview.png' -WorkingDirectory "$PWD" -Wait -PassThru
+          if ($p.ExitCode -ne 0 -or !(Test-Path dist/packaged-preview.png)) { throw "Packaged Qt assets failed to render" }
+      - name: Check executable size and checksum
+        shell: pwsh
+        run: |
+          $file = Get-Item dist/OpenFlow.exe
+          if ($file.Length -gt 99MB -or $file.Length -lt 10MB) { throw "Unexpected executable size: $($file.Length)" }
+          Get-Content dist/SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: OpenFlow-Windows-x64
+          path: |
+            dist/OpenFlow.exe
+            dist/SHA256SUMS.txt
+            dist/smoke-result.json
+            dist/packaged-preview.png
+            docs/screenshot.png
+          retention-days: 14
+          compression-level: 0
+      - name: Prepare binary for workspace delivery
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python scripts/github_blob.py dist/OpenFlow.exe *> blob-output.txt
+          $code = $LASTEXITCODE
+          Get-Content blob-output.txt
+          if ($code -ne 0) { exit $code }
+          Copy-Item blob-output.txt dist/delivery.json
+          python scripts/github_blob.py docs/screenshot.png *> preview-output.txt
+          $code = $LASTEXITCODE
+          Get-Content preview-output.txt
+          if ($code -ne 0) { exit $code }
+          Copy-Item preview-output.txt dist/preview-delivery.json
+      - name: Record delivery metadata for the workspace
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/record_delivery.py
+      - name: Publish release
+        if: (github.event_name == 'workflow_dispatch' && inputs.publish) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[release]'))
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.release_tag || 'v1.0.0' }}
+        run: |
+          [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid release tag'; exit 1; }
+          cp dist/SHA256SUMS.txt SHA256SUMS.txt
+          printf '\nWindows 10/11 x64. First launch downloads the free Small model (~181 MB); dictation is offline afterward.\n' >> RELEASE.md
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/OpenFlow.exe SHA256SUMS.txt --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$TAG" dist/OpenFlow.exe SHA256SUMS.txt --target "$GITHUB_SHA" --title "OpenFlow 1.0.0 — free local dictation" --notes-file RELEASE.md --repo "$GITHUB_REPOSITORY"
+          fi
