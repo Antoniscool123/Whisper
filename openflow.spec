@@ -1,5 +1,6 @@
 # Build on Windows x64 with Python 3.11. Models are downloaded separately.
 import os
+import sysconfig
 from pathlib import Path
 from PyInstaller.utils.hooks import collect_all, collect_dynamic_libs
 
@@ -17,6 +18,12 @@ for package in ('pywhispercpp', 'sounddevice'):
 # Delvewheel places the native whisper/ggml DLLs in the wheel's platlib.
 # collect_dynamic_libs also finds these when PyInstaller installs the wheel.
 binaries += collect_dynamic_libs('pywhispercpp')
+# pywhispercpp's Windows wheel is delvewheel-repaired: its renamed native DLLs
+# sit at platlib root, not inside the Python package. Include them explicitly.
+platlib = Path(sysconfig.get_paths()['platlib'])
+for pattern in ('ggml*.dll', 'whisper-*.dll', 'msvcp140*.dll', 'vcomp140*.dll'):
+    for native in platlib.glob(pattern):
+        binaries.append((str(native), '.'))
 
 excludes = ['tkinter', 'matplotlib', 'pandas', 'scipy', 'torch', 'transformers',
             'IPython', 'pytest', 'PIL', 'PySide6.QtQml', 'PySide6.QtQuick',
