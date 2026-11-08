@@ -1,7 +1,7 @@
 {
-  "run_id": "42471828063",
-  "run_url": "https://github.com/Antoniscool123/Whisper/actions/runs/42471828063",
-  "commit": "c9b9893654c4349b9a1cc07c1e9a9bd7b4fb9f9e",
+  "run_id": "42471962072",
+  "run_url": "https://github.com/Antoniscool123/Whisper/actions/runs/42471962072",
+  "commit": "a842c7fedb994ea6fd2099480a38f02c3bea6c10",
   "executable": null,
   "preview": {
     "repository": "Antoniscool123/Whisper",
@@ -11,5 +11,12 @@
     "sha256": "4c475bfab1113d35831cc9193776a1d30b7adaccdd6c920e5974b5ff35707b69"
   },
   "diagnostic": null,
-  "progress": null
+  "progress": null,
+  "output": {
+    "repository": "Antoniscool123/Whisper",
+    "blob": "a419bbd2afb4aa67dbe2f990cd8f0f1574d374ac",
+    "filename": "integration-output.txt",
+    "bytes": 213,
+    "sha256": "83da75c34d6935c977182844c10e2024ebbb75b9990db5a47e50a97e04a72bde"
+  }
 }
