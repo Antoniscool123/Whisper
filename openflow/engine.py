@@ -47,7 +47,7 @@ class WhisperEngine:
             # Import only after the file is verified. All native inference runs in
             # our worker thread, never on the UI or microphone callback thread.
             from pywhispercpp.model import Model
-            model = Model(str(path), redirect_whispercpp_logs_to=None,
+            model = Model(str(path), redirect_whispercpp_logs_to=False,
                           context_params={"use_gpu": False, "flash_attn": False},
                           n_threads=max(1, min(16, threads, os.cpu_count() or 4)),
                           print_progress=False, print_realtime=False, print_timestamps=False,

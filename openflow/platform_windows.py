@@ -17,6 +17,7 @@ class WindowsIntegration:
     def __init__(self) -> None:
         self.available = os.name == "nt"
         self.last_external: Target | None = None
+        self.clipboard_owner = None
         if not self.available:
             return
         self.user32 = C.windll.user32
@@ -26,6 +27,8 @@ class WindowsIntegration:
         self.user32.GetWindowThreadProcessId.argtypes = [C.c_void_p, C.POINTER(C.c_uint32)]
         self.user32.IsWindow.argtypes = [C.c_void_p]
         self.user32.SetForegroundWindow.argtypes = [C.c_void_p]
+        self.user32.OpenClipboard.argtypes = [C.c_void_p]
+        self.user32.EmptyClipboard.restype = C.c_int
         self.user32.GetClipboardSequenceNumber.restype = C.c_uint32
         self.user32.OpenClipboard.argtypes = [C.c_void_p]
         self.user32.GetClipboardData.argtypes = [C.c_uint]
@@ -58,14 +61,18 @@ class WindowsIntegration:
             self.last_external = target
 
     def valid(self, target: Target | None) -> bool:
-        return bool(self.available and target and self.user32.IsWindow(target.hwnd))
+        if not (self.available and target and self.user32.IsWindow(target.hwnd)):
+            return False
+        pid = C.c_uint32()
+        self.user32.GetWindowThreadProcessId(target.hwnd, C.byref(pid))
+        return pid.value == target.pid
 
     def same_target(self, target: Target | None) -> bool:
         return bool(self.valid(target) and self.foreground() == target)
 
-    def _open_clipboard(self) -> bool:
+    def _open_clipboard(self, owner=None) -> bool:
         for _ in range(15):
-            if self.user32.OpenClipboard(None):
+            if self.user32.OpenClipboard(owner):
                 return True
             time.sleep(0.025)
         return False
@@ -90,7 +97,7 @@ class WindowsIntegration:
             self.user32.CloseClipboard()
 
     def set_text(self, text: str) -> bool:
-        if not self.available or not self._open_clipboard():
+        if not self.available or not self.clipboard_owner or not self._open_clipboard(self.clipboard_owner):
             return False
         handle = None
         transferred = False
@@ -106,6 +113,8 @@ class WindowsIntegration:
                 C.memmove(pointer, data, len(data))
             finally:
                 self.kernel32.GlobalUnlock(handle)
+            if not self.user32.EmptyClipboard():
+                return False
             transferred = bool(self.user32.SetClipboardData(13, handle))
             return transferred
         finally:
@@ -152,19 +161,22 @@ class WindowsIntegration:
         if self.user32.SendInput(len(events), array, C.sizeof(INPUT)) != len(events):
             raise RuntimeError("Windows blocked keyboard insertion. The text is copied; press Ctrl+V manually.")
 
-    def paste(self, text: str, target: Target | None, restore: bool = True) -> str:
+    def paste(self, text: str, target: Target | None, restore: bool = True, require_same: bool = False) -> str:
         if not self.available:
             return "unavailable"
         if not self.valid(target):
             return "no_target"
-        self.user32.SetForegroundWindow(target.hwnd)
-        time.sleep(0.15)
+        if not require_same:
+            self.user32.SetForegroundWindow(target.hwnd)
+            time.sleep(0.15)
         if not self.same_target(target):
             return "focus_changed"
         previous = self.get_text() if restore else None
         if not self.set_text(text):
             return "clipboard_busy"
         sequence = self.user32.GetClipboardSequenceNumber()
+        if not self.same_target(target):
+            return "focus_changed"
         try:
             self._send_paste()
         except RuntimeError:

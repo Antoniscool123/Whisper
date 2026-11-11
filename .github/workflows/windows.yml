@@ -2,7 +2,7 @@ name: Build and test Windows app
 
 on:
   push:
-    branches: [arena/b6ec36f3-whisper]
+    branches: [arena/5b2095a2-whisper]
     paths-ignore: ['README.md', 'docs/**', 'LICENSE', 'NOTICE.md', 'THIRD_PARTY_NOTICES.md', 'build-delivery.json']
   workflow_dispatch:
     inputs:
@@ -13,7 +13,7 @@ on:
       release_tag:
         description: Release tag (only used when publish is true)
         type: string
-        default: v1.0.1
+        default: v1.1.0
 
 permissions:
   contents: write
@@ -89,6 +89,15 @@ jobs:
           if ($p.ExitCode -ne 0 -or !(Test-Path dist/startup-result.json)) { throw "Packaged startup failed: $($p.ExitCode)" }
           $result = Get-Content dist/startup-result.json -Raw | ConvertFrom-Json
           if (!$result.ok -or !$result.frozen) { throw "Invalid startup-test result" }
+      - name: Test packaged real model loading
+        shell: pwsh
+        run: |
+          $env:OPENFLOW_DATA_DIR = "$PWD/engine-test-data"
+          $p = Start-Process -FilePath "$PWD/dist/OpenFlow.exe" -ArgumentList '--engine-test','dist/engine-result.json' -WorkingDirectory "$PWD" -PassThru
+          if (!$p.WaitForExit(180000)) { $p.Kill(); throw "Packaged model test timed out" }
+          if ($p.ExitCode -ne 0 -or !(Test-Path dist/engine-result.json)) { throw "Packaged model test failed: $($p.ExitCode)" }
+          $result = Get-Content dist/engine-result.json -Raw | ConvertFrom-Json
+          if (!$result.ok -or !$result.frozen -or !$result.no_stderr -or $result.language -ne 'da') { throw "Invalid engine-test result" }
       - name: Upload startup diagnostics
         if: failure()
         shell: bash
@@ -140,7 +149,7 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ inputs.release_tag || 'v1.0.1' }}
+          TAG: ${{ inputs.release_tag || 'v1.1.0' }}
         run: |
           [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid release tag'; exit 1; }
           cp dist/SHA256SUMS.txt SHA256SUMS.txt
@@ -148,5 +157,5 @@ jobs:
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release upload "$TAG" dist/OpenFlow.exe SHA256SUMS.txt --clobber --repo "$GITHUB_REPOSITORY"
           else
-            gh release create "$TAG" dist/OpenFlow.exe SHA256SUMS.txt --target "$GITHUB_SHA" --title "OpenFlow 1.0.1 — free local dictation" --notes-file RELEASE.md --repo "$GITHUB_REPOSITORY"
+            gh release create "$TAG" dist/OpenFlow.exe SHA256SUMS.txt --target "$GITHUB_SHA" --title "OpenFlow 1.1.0 — free local dictation" --notes-file RELEASE.md --repo "$GITHUB_REPOSITORY"
           fi

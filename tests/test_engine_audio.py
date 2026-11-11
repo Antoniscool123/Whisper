@@ -73,3 +73,22 @@ def test_recorder_memory_only_and_bounded(monkeypatch):
     assert recorder.snapshot()[1] == MAX_SECONDS
     recorder.cancel()
     assert recorder.stop().size == 0
+
+
+def test_model_load_supports_windowed_executable_without_stderr(tmp_path, monkeypatch):
+    import openflow.engine as engine_module
+    path = tmp_path / "model.bin"
+    path.write_bytes(b"lmgg")
+    monkeypatch.setattr(engine_module, "verify_cached", lambda *args: path)
+    seen = {}
+    class LoadingModel:
+        def __init__(self, filename, **kwargs):
+            seen.update(kwargs)
+            self._ctx = object()
+    monkeypatch.setitem(sys.modules, "pywhispercpp", types.ModuleType("pywhispercpp"))
+    monkeypatch.setitem(sys.modules, "pywhispercpp.model", types.SimpleNamespace(Model=LoadingModel))
+    monkeypatch.setattr(sys, "stderr", None)
+    engine = WhisperEngine()
+    engine.load("tiny-q5_1", threading.Event())
+    assert seen["redirect_whispercpp_logs_to"] is False
+    assert engine.model_id == "tiny-q5_1"

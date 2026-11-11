@@ -41,6 +41,7 @@ class Settings:
     model: str = "small-q5_1"
     hotkey: str = "right_ctrl"
     microphone: str = ""
+    show_overlay: bool = True
     auto_paste: bool = True
     restore_clipboard: bool = True
     clean_fillers: bool = True

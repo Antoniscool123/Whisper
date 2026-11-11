@@ -80,6 +80,27 @@ class PasteSignals(QObject):
     finished = Signal(str)
 
 
+class DictationOverlay(QWidget):
+    """Non-activating status indicator, so the target app retains keyboard focus."""
+    def __init__(self):
+        super().__init__(None, Qt.Tool | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.WindowDoesNotAcceptFocus)
+        self.setAttribute(Qt.WA_ShowWithoutActivating)
+        self.setAttribute(Qt.WA_TransparentForMouseEvents)
+        self.setStyleSheet("QWidget { background: #14242d; color: #d6fff4; border: 1px solid #396c63; border-radius: 14px; } QLabel { border: 0; padding: 10px 16px; font-weight: bold; }")
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.text = QLabel("OpenFlow · Ready")
+        layout.addWidget(self.text)
+        self.setFixedSize(200, 44)
+        screen = QApplication.primaryScreen()
+        if screen:
+            rect = screen.availableGeometry()
+            self.move(rect.right() - self.width() - 20, rect.bottom() - self.height() - 20)
+
+    def set_status(self, status: str) -> None:
+        self.text.setText("●  OpenFlow · " + status)
+
+
 class MainWindow(QMainWindow):
     def __init__(self, preview: bool = False):
         super().__init__()
@@ -111,6 +132,9 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(960, 680)
         self.setStyleSheet(STYLE)
         self._build()
+        if os.name == "nt":
+            self.integration.clipboard_owner = int(self.winId())
+        self.overlay = None if preview else DictationOverlay()
         self.setStatusBar(QStatusBar())
         self.statusBar().showMessage("Free forever. No account, no word limit, no cloud transcription.")
         self._sync_controls()
@@ -445,6 +469,7 @@ class MainWindow(QMainWindow):
         recording.layout_.addWidget(label("Microphone", "Muted"))
         recording.layout_.addLayout(mic_row)
         self.mic_combo.currentIndexChanged.connect(self._microphone_changed)
+        self.overlay_check = self._checkbox(recording.layout_, "Show floating dictation status above other apps", "show_overlay")
         self.auto_paste_check = self._checkbox(recording.layout_, "Automatically insert text into the app where I started speaking", "auto_paste")
         self.restore_check = self._checkbox(recording.layout_, "Restore my previous text clipboard after pasting", "restore_clipboard")
         self.filler_check = self._checkbox(recording.layout_, "Remove hesitation sounds (øh, øhm, um, uh…)", "clean_fillers")
@@ -539,6 +564,7 @@ class MainWindow(QMainWindow):
             QApplication.setQuitOnLastWindowClosed(not value or self.tray is None)
         self._save()
         self._update_stats()
+        self._update_ui()
 
     def _apply_startup(self) -> bool:
         if os.name != "nt":
@@ -852,7 +878,7 @@ class MainWindow(QMainWindow):
                 if require_same and not self.integration.same_target(target):
                     outcome = "focus_changed"
                 else:
-                    outcome = self.integration.paste(text, target, restore)
+                    outcome = self.integration.paste(text, target, restore, require_same=require_same)
             except Exception as exc:
                 LOG.error("Text insertion failed: %s", type(exc).__name__)
                 outcome = "copied_blocked"
@@ -907,6 +933,16 @@ class MainWindow(QMainWindow):
                     self._cancel()
 
     def _update_ui(self) -> None:
+        if self.overlay:
+            if not self.settings.show_overlay:
+                self.overlay.hide()
+            else:
+                status = ("Listening" if self.recording else "Transcribing" if self.worker_state == "transcribing"
+                          else "Inserting" if self.pasting else "Ready" if self.model_state == "ready"
+                          else "Preparing" if self.worker_state != "idle" else "Model needed")
+                self.overlay.set_status(status)
+                if not self.overlay.isVisible():
+                    self.overlay.show()
         busy = self.worker_state != "idle"
         ready = self.model_state == "ready"
         spec = MODEL_CATALOG[self.settings.model]
@@ -1040,6 +1076,8 @@ class MainWindow(QMainWindow):
         if self.really_close:
             return
         self.really_close = True
+        if self.overlay:
+            self.overlay.close()
         if self.preview:
             QApplication.quit(); return
         self.recording = False
