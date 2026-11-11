@@ -31,3 +31,13 @@ Lyd behandles lokalt i hukommelsen og gemmes ikke som lydfil. Transskriptioner g
 ## Bemærk
 
 Appen er et selvstændigt, gratis alternativ inspireret af Wispr Flow-arbejdsgangen — ikke en officiel eller identisk kopi. Den indeholder ikke cloud-LLM-omskrivning eller skærmkontekst. Den er ikke kode-signeret; Windows SmartScreen kan derfor vise en advarsel. Kontrollér kildekode og SHA-256 før du vælger **Mere info → Kør alligevel**.
+
+## Hastighed og præcision
+
+- Vælg **Danish · Dansk** i stedet for automatisk sprogregistrering; så undgår du en ekstra beregning.
+- For en i5-1145G7: start med **4 CPU threads** og lad **Preload** være slået til. Lad pc'en være tilsluttet strøm under længere optagelser.
+- **Faster short recordings** i Settings bruger en kortere lydkontekst for optagelser på højst 26 sekunder. Det kan være hurtigere, men resultatet kan ændre sig. Slå det fra, hvis dansk bliver mindre præcist. Længere optagelser bruger altid fuld kontekst.
+- **Small** er et kompromis. **Base** kan være hurtigere, men mindre præcis; **Medium** kan være mere præcis, men er langsommere og kræver mere hukommelse. Modeller skal downloades hver for sig.
+- Tal tydeligt tæt på mikrofonen, undgå baggrundsstøj, og tilføj navne og fagord under **Vocabulary → Recognition hints**. Svag lyd forstærkes forsigtigt, men støj kan ikke fjernes automatisk.
+
+I én automatiseret test med en 11-sekunders dansk prøve og Small-modellen tog fuld kontekst 7,80 sekunder og kort kontekst 3,19 sekunder på en GitHub Windows-runner. Resultatet var ikke identisk. Det er kun én prøve og ikke en måling på din computer; både hastighed og præcision varierer.

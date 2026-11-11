@@ -1,4 +1,4 @@
-# OpenFlow 1.1.0
+# OpenFlow 1.2.0
 
 Free, local, multilingual voice typing for Windows 10/11 x64. Danish is the default, with 100 Whisper language choices. No account, subscription, API key or word limit.
 
@@ -11,7 +11,13 @@ Free, local, multilingual voice typing for Windows 10/11 x64. Danish is the defa
 
 After the model is downloaded, dictation works offline. Models are separate from the executable. The app is a Wispr Flow-style open-source alternative, not an affiliated or feature-identical clone; it does not provide cloud LLM rewriting or screen-context capture.
 
-## What's new
+## What's new in 1.2.0
+
+- Experimental faster processing of short recordings (on by default; turn off in Settings if recognition gets worse).
+- Quiet speech is gently boosted without clipping, and cleared vocabulary hints no longer persist accidentally.
+- For Danish, select Danish rather than Auto to avoid an extra language-detection pass. Small remains the default quality model; Base is faster but may be less accurate.
+
+## Previous improvements
 
 - Fix model loading in the windowed executable when standard error is unavailable.
 - A non-activating, always-on-top status overlay shows dictation state. Disable it in Settings if desired.
