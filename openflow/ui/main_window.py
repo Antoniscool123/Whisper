@@ -1025,6 +1025,9 @@ class MainWindow(QMainWindow):
         self.activateWindow()
 
     def closeEvent(self, event) -> None:
+        if self.really_close:
+            event.accept()
+            return
         if self.settings.minimize_to_tray and self.tray and not self.really_close:
             event.ignore()
             self.hide()

@@ -90,14 +90,18 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--smoke-test", nargs="?", const="smoke-result.json", metavar="JSON_PATH",
                         help="Verify packaged dependencies and exit (for CI)")
     parser.add_argument("--render-preview", metavar="PNG_PATH", help="Render an interface preview and exit")
+    parser.add_argument("--startup-test", metavar="JSON_PATH", help="Exercise normal startup and exit (for CI)")
     args = parser.parse_args(argv)
     if args.smoke_test:
         return smoke_test(args.smoke_test)
     if args.render_preview:
         return render_preview(args.render_preview)
+    if args.startup_test:
+        os.environ["QT_QPA_PLATFORM"] = "offscreen"
     configure_logging()
     from PySide6.QtGui import QColor, QFont, QPalette
-    from PySide6.QtCore import QLockFile, QLocalServer, QLocalSocket
+    from PySide6.QtCore import QLockFile, QTimer
+    from PySide6.QtNetwork import QLocalServer, QLocalSocket
     from PySide6.QtWidgets import QApplication, QMessageBox
     from .ui.main_window import MainWindow
     app = QApplication(sys.argv[:1])
@@ -136,12 +140,22 @@ def main(argv: list[str] | None = None) -> int:
     server.newConnection.connect(lambda: window.show_window())
     def exception_hook(kind, value, traceback):
         logging.getLogger(__name__).error("Unhandled UI exception", exc_info=(kind, value, traceback))
-        QMessageBox.critical(None, "OpenFlow", f"An unexpected error occurred. Details are in {app_directory() / 'openflow.log'}.")
+        if args.startup_test:
+            import traceback as traceback_module
+            Path("startup-error.txt").write_text("".join(traceback_module.format_exception(kind, value, traceback)), encoding="utf-8")
+            app.exit(1)
+        else:
+            QMessageBox.critical(None, "OpenFlow", f"An unexpected error occurred. Details are in {app_directory() / 'openflow.log'}.")
     sys.excepthook = exception_hook
     if (args.minimized or window.settings.start_minimized) and window.tray:
         window.hide()
     else:
         window.show()
+    if args.startup_test:
+        def finish_startup_test():
+            window.quit()
+            Path(args.startup_test).write_text(json.dumps({"ok": True, "frozen": getattr(sys, "frozen", False)}), encoding="utf-8")
+        QTimer.singleShot(500, finish_startup_test)
     code = app.exec()
     server.close()
     lock.unlock()

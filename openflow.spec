@@ -9,7 +9,7 @@ datas = [('openflow/assets', 'openflow/assets')]
 binaries = []
 hiddenimports = ['_pywhispercpp', 'pywhispercpp.model', 'pywhispercpp.constants',
                  'pywhispercpp.utils', 'sounddevice', 'numpy', 'requests', 'tqdm',
-                 'PySide6.QtCore', 'PySide6.QtGui', 'PySide6.QtWidgets']
+                 'PySide6.QtCore', 'PySide6.QtGui', 'PySide6.QtWidgets', 'PySide6.QtNetwork']
 for package in ('pywhispercpp', 'sounddevice'):
     package_datas, package_binaries, package_hidden = collect_all(package)
     datas += package_datas
@@ -34,7 +34,7 @@ excludes = ['tkinter', 'matplotlib', 'pandas', 'scipy', 'torch', 'transformers',
             'PySide6.QtBluetooth', 'PySide6.QtNfc', 'PySide6.QtSerialPort',
             'PySide6.QtPositioning', 'PySide6.QtSensors', 'PySide6.QtWebSockets',
             'PySide6.QtDesigner', 'PySide6.QtHelp', 'PySide6.QtTest',
-            'PySide6.QtSql', 'PySide6.QtXml', 'PySide6.QtNetwork', 'PySide6.QtOpenGL',
+            'PySide6.QtSql', 'PySide6.QtXml', 'PySide6.QtOpenGL',
             'PySide6.QtOpenGLWidgets', 'PySide6.QtSvg', 'PySide6.QtSvgWidgets',
             'PySide6.QtUiTools', 'PySide6.QtPrintSupport', 'PySide6.QtDBus']
 
@@ -49,7 +49,7 @@ unused_prefixes = ('qt6qml', 'qt6quick', 'qt6quick3d', 'qt6virtualkeyboard',
                    'qt6pdf', 'qt6charts', 'qt6datavisualization', 'qt6multimedia',
                    'qt6bluetooth', 'qt6nfc', 'qt6serialport', 'qt6positioning',
                    'qt6sensors', 'qt6websockets', 'qt6designer', 'qt6help',
-                   'qt6test', 'qt6sql', 'qt6xml', 'qt6network', 'qt6opengl',
+                   'qt6test', 'qt6sql', 'qt6xml', 'qt6opengl',
                    'qt6svg', 'qt6dbus', 'qt6printsupport', 'qt6shadertools')
 a.binaries = [entry for entry in a.binaries
               if not os.path.basename(entry[0]).lower().startswith(unused_prefixes)]
