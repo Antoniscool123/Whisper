@@ -167,9 +167,13 @@ def main(argv: list[str] | None = None) -> int:
             window.quit()
             checkpoint("after quit")
             Path(args.startup_test).write_text(json.dumps({"ok": True, "frozen": getattr(sys, "frozen", False)}), encoding="utf-8")
+            checkpoint("after result")
         QTimer.singleShot(500, finish_startup_test)
     checkpoint("before event loop")
     code = app.exec()
+    checkpoint("after event loop")
     server.close()
+    checkpoint("after server close")
     lock.unlock()
+    checkpoint("after unlock")
     return code
