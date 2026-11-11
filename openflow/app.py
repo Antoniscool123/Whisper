@@ -84,6 +84,22 @@ def render_preview(output: str) -> int:
     return 0
 
 
+def engine_test(output: str) -> int:
+    """Exercise a real model load and inference from the windowed executable."""
+    import threading
+    import numpy as np
+    from .engine import WhisperEngine
+    engine = WhisperEngine()
+    engine.load("tiny-q5_1", threading.Event(), download=True, threads=4)
+    # Non-silent synthetic input is enough to exercise the native inference path.
+    audio = (np.sin(np.arange(16000, dtype=np.float32) * 0.1) * 0.1).astype(np.float32)
+    result = engine.transcribe(audio, "da")
+    engine.unload()
+    Path(output).write_text(json.dumps({"ok": True, "frozen": getattr(sys, "frozen", False),
+                                       "language": result.language, "no_stderr": sys.stderr is None}), encoding="utf-8")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="OpenFlow — free, local, multilingual dictation")
     parser.add_argument("--minimized", action="store_true", help="Start in the system tray")
@@ -91,7 +107,10 @@ def main(argv: list[str] | None = None) -> int:
                         help="Verify packaged dependencies and exit (for CI)")
     parser.add_argument("--render-preview", metavar="PNG_PATH", help="Render an interface preview and exit")
     parser.add_argument("--startup-test", metavar="JSON_PATH", help="Exercise normal startup and exit (for CI)")
+    parser.add_argument("--engine-test", metavar="JSON_PATH", help="Exercise packaged native model loading (for CI)")
     args = parser.parse_args(argv)
+    if args.engine_test:
+        return engine_test(args.engine_test)
     if args.smoke_test:
         return smoke_test(args.smoke_test)
     if args.render_preview:

@@ -3,7 +3,7 @@ from openflow.app import main
 
 if __name__ == "__main__":
     import sys
-    if "--startup-test" in sys.argv:
+    if "--startup-test" in sys.argv or "--engine-test" in sys.argv:
         try:
             raise SystemExit(main())
         except Exception:

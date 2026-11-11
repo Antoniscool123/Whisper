@@ -170,3 +170,7 @@ Manual release checklist: Danish microphone dictation; auto-detect; hold/release
 ## License and acknowledgements
 
 OpenFlow's original code and icon are MIT licensed. See [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Built with [whisper.cpp](https://github.com/ggml-org/whisper.cpp), [pywhispercpp](https://github.com/absadiki/pywhispercpp), [OpenAI Whisper models](https://github.com/openai/whisper), Qt/PySide6, NumPy, sounddevice/PortAudio and PyInstaller. Model weights are downloaded separately from [ggerganov/whisper.cpp](https://huggingface.co/ggerganov/whisper.cpp).
+
+### Floating dictation status
+
+OpenFlow displays a small non-interactive status indicator above normal windows without taking focus. Turn it off in Settings → Recording & text insertion. Focus the destination text field before using the shortcut. Automatic paste is best effort: elevated apps, secure fields, games, terminals, and apps that intercept Ctrl+V may not accept it. If focus changes during dictation, OpenFlow copies the transcript instead of pasting into the wrong window.
