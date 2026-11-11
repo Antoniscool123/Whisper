@@ -1,6 +1,7 @@
 """Real native-engine smoke test on CI. Uses a public English sample, not user audio."""
 import base64
 import json
+from difflib import SequenceMatcher
 import os
 import tempfile
 import urllib.request
@@ -61,8 +62,10 @@ def main() -> None:
         baseline = engine.transcribe(danish, "da", fast_short_audio=False)
         fast = engine.transcribe(danish, "da", fast_short_audio=True)
         assert baseline.text.strip() and fast.text.strip(), "Empty Danish output"
+        similarity = SequenceMatcher(None, baseline.text.casefold().split(), fast.text.casefold().split()).ratio()
+        assert similarity >= 0.75, f"Short-context output differs substantially from full context: {similarity:.2f}"
         checkpoint(f"Danish full context ({baseline.inference_seconds:.2f}s): {baseline.text}")
-        checkpoint(f"Danish short context ({fast.inference_seconds:.2f}s): {fast.text}")
+        checkpoint(f"Danish short context ({fast.inference_seconds:.2f}s, similarity {similarity:.2f}): {fast.text}")
         engine.unload()
         print("PASS: checksum-verified model download, native Whisper inference, English transcription, cleanup and unload")
 

@@ -123,3 +123,14 @@ def test_prepare_audio_amplifies_quiet_speech_without_clipping():
     assert np.array_equal(prepare_audio(silence), silence)
     loud = np.full(SAMPLE_RATE, 0.5, dtype=np.float32)
     assert np.array_equal(prepare_audio(loud), loud)
+
+
+def test_silence_hallucination_filter_uses_original_volume():
+    engine = WhisperEngine()
+    class HallucinationModel:
+        def transcribe(self, audio, **kwargs):
+            assert np.sqrt(np.mean(audio ** 2)) > 0.015
+            return [types.SimpleNamespace(text="thanks for watching")]
+    engine.model = HallucinationModel()
+    quiet_speech = (np.sin(np.arange(SAMPLE_RATE, dtype=np.float32) * 0.1) * 0.012)
+    assert engine.transcribe(quiet_speech, "da").text == ""

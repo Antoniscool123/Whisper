@@ -97,6 +97,7 @@ class WhisperEngine:
             seconds = len(audio) / SAMPLE_RATE
             if float(np.max(np.abs(audio))) < 0.001:
                 raise ValueError("No audible speech was detected. Check your microphone and its Windows permission.")
+            original_rms = float(np.sqrt(np.mean(np.square(audio, dtype=np.float64))))
             audio = prepare_audio(audio)
             started = time.monotonic()
             detected, probability = language, 1.0
@@ -125,7 +126,7 @@ class WhisperEngine:
             # Suppress well-known silence hallucinations rather than type them.
             normalized = text.casefold().strip(" .,!?'\"")
             if normalized in {"thanks for watching", "tak fordi du så med",
-                              "undertekster af", "amara.org", "subtitles by the amara.org community"} and float(np.sqrt(np.mean(audio ** 2))) < 0.015:
+                              "undertekster af", "amara.org", "subtitles by the amara.org community"} and original_rms < 0.015:
                 text = ""
             return Transcript(text, detected, probability, seconds, time.monotonic() - started)
 

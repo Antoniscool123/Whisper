@@ -145,7 +145,7 @@ dist\OpenFlow.exe
 dist\SHA256SUMS.txt
 ```
 
-The GitHub Actions workflow builds on `windows-latest`, runs tests, downloads a free Tiny model and transcribes a public English sample through the real native engine, builds the executable, then launches the packaged executable in smoke-test and Qt-render modes. It uploads the executable and checksum as an artifact and can publish a GitHub Release via manual dispatch.
+The GitHub Actions workflow builds on `windows-latest`, runs tests, downloads free Tiny and Small models and transcribes public English and Danish samples through the real native engine, builds the executable, then launches the packaged executable in smoke-test and Qt-render modes. It uploads the executable and checksum as an artifact and can publish a GitHub Release via manual dispatch.
 
 Verify a downloaded release:
 
@@ -160,7 +160,7 @@ Get-FileHash .\OpenFlow.exe -Algorithm SHA256
 python -m pip install -r requirements-dev.txt
 python -m pytest
 python -m ruff check openflow app.py scripts tests --select E9,F63,F7,F82
-python scripts/integration_test.py  # downloads a free Tiny model and a public audio sample
+python scripts/integration_test.py  # downloads free Tiny and Small models and uses public audio samples
 ```
 
 Automated coverage includes Danish text cleanup, Unicode vocabulary, settings/history persistence, all language codes, hotkey state transitions, checksum/resume behavior, bounded memory recording and the transcription adapter. CI additionally exercises native English speech recognition and packaged Windows dependencies. Physical microphone quality, global hooks in third-party apps and clipboard behavior still need a manual Windows check; CI cannot prove every app accepts pasted input.
