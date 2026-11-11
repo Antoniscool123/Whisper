@@ -1,7 +1,7 @@
 {
-  "run_id": "42979676748",
-  "run_url": "https://github.com/Antoniscool123/Whisper/actions/runs/42979676748",
-  "commit": "a6cd05d0c5d722684bb4844b560b0b496f7239e2",
+  "run_id": "42980038728",
+  "run_url": "https://github.com/Antoniscool123/Whisper/actions/runs/42980038728",
+  "commit": "cbbf74cc744162ae8c32ff0d692507927864a33d",
   "executable": null,
   "preview": {
     "repository": "Antoniscool123/Whisper",
@@ -10,7 +10,13 @@
     "sha256": "e0ac52bd01d12a1cec07f0eb7e5fa04966bd8a1f3d66200dfe265afb1150ed0c",
     "blob": "f4a06e6372dc455559250dadd597e606c395a9b4"
   },
-  "diagnostic": null,
+  "diagnostic": {
+    "repository": "Antoniscool123/Whisper",
+    "filename": "openflow.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+  },
   "progress": null,
   "output": null,
   "executable_error": null,
