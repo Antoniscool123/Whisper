@@ -89,6 +89,14 @@ jobs:
           if ($p.ExitCode -ne 0 -or !(Test-Path dist/startup-result.json)) { throw "Packaged startup failed: $($p.ExitCode)" }
           $result = Get-Content dist/startup-result.json -Raw | ConvertFrom-Json
           if (!$result.ok -or !$result.frozen) { throw "Invalid startup-test result" }
+      - name: Upload startup diagnostics
+        if: failure()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -f startup-error.txt ]; then python scripts/github_blob.py startup-error.txt | tee integration-output-delivery.json; fi
+          if [ -f startup-test-data/openflow.log ]; then python scripts/github_blob.py startup-test-data/openflow.log | tee integration-error-delivery.json; fi
       - name: Check executable size and checksum
         shell: pwsh
         run: |

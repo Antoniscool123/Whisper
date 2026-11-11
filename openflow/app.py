@@ -140,7 +140,12 @@ def main(argv: list[str] | None = None) -> int:
     server.newConnection.connect(lambda: window.show_window())
     def exception_hook(kind, value, traceback):
         logging.getLogger(__name__).error("Unhandled UI exception", exc_info=(kind, value, traceback))
-        QMessageBox.critical(None, "OpenFlow", f"An unexpected error occurred. Details are in {app_directory() / 'openflow.log'}.")
+        if args.startup_test:
+            import traceback as traceback_module
+            Path("startup-error.txt").write_text("".join(traceback_module.format_exception(kind, value, traceback)), encoding="utf-8")
+            app.exit(1)
+        else:
+            QMessageBox.critical(None, "OpenFlow", f"An unexpected error occurred. Details are in {app_directory() / 'openflow.log'}.")
     sys.excepthook = exception_hook
     if (args.minimized or window.settings.start_minimized) and window.tray:
         window.hide()
