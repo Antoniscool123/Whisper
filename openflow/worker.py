@@ -68,7 +68,8 @@ class SpeechWorker(QThread):
                     if self.engine.model_id != settings["model"]:
                         self.engine.load(settings["model"], self.job_cancel, threads=settings.get("threads", 4))
                     result = self.engine.transcribe(data["audio"], settings["language"],
-                                                    hints=settings.get("hints", ""), cancel=self.job_cancel)
+                                                    hints=settings.get("hints", ""), cancel=self.job_cancel,
+                                                    fast_short_audio=settings.get("fast_short_audio", True))
                     self.event.emit("result", (result, settings, data["job_id"]))
                 elif command == "unload":
                     self.engine.unload()

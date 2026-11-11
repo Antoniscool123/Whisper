@@ -448,6 +448,8 @@ class MainWindow(QMainWindow):
         self.threads_combo.currentIndexChanged.connect(self._threads_changed)
         self._field(speech.layout_, "CPU usage", self.threads_combo,
                     "More threads can be faster but use more CPU. The change applies when the model is next loaded.")
+        self.fast_audio_check = self._checkbox(speech.layout_, "Faster short recordings (experimental)", "fast_short_audio")
+        speech.layout_.addWidget(label("Uses a shorter audio context for clips up to 26 seconds. Usually faster, but can change recognition; turn it off if accuracy suffers. Danish avoids the extra language-detection pass.", "Small", True))
         self.preload_check = self._checkbox(speech.layout_, "Preload a downloaded model at startup", "preload")
         layout.addWidget(speech)
 

@@ -174,3 +174,7 @@ OpenFlow's original code and icon are MIT licensed. See [LICENSE](LICENSE) and [
 ### Floating dictation status
 
 OpenFlow displays a small non-interactive status indicator above normal windows without taking focus. Turn it off in Settings → Recording & text insertion. Focus the destination text field before using the shortcut. Automatic paste is best effort: elevated apps, secure fields, games, terminals, and apps that intercept Ctrl+V may not accept it. If focus changes during dictation, OpenFlow copies the transcript instead of pasting into the wrong window.
+
+### Speed and accuracy
+
+Short recordings use an experimental shorter Whisper encoder context by default. This can speed up processing but can also change accuracy; disable **Faster short recordings** under Settings → Speech to use the full context. Recordings over 26 seconds always use the full context. Quiet but audible input is gently amplified (at most 4×) without clipping; this cannot remove background noise. For Danish choose **Danish**, not auto-detect, to avoid an additional language-identification pass. Small is the quality/speed compromise; try Base for speed or Medium for quality, at the cost of speed. Preload avoids repeatedly loading the model. On a four-core CPU, start with four threads. Performance depends on audio, hardware, power mode and other workloads.

@@ -92,3 +92,34 @@ def test_model_load_supports_windowed_executable_without_stderr(tmp_path, monkey
     engine.load("tiny-q5_1", threading.Event())
     assert seen["redirect_whispercpp_logs_to"] is False
     assert engine.model_id == "tiny-q5_1"
+
+
+def test_short_audio_context_never_truncates_and_long_resets():
+    from openflow.engine import short_audio_context
+    for seconds in (0.25, 1, 10, 25, 26):
+        ctx = short_audio_context(int(seconds * SAMPLE_RATE))
+        assert 512 <= ctx <= 1500
+        assert ctx >= seconds * 50
+    assert short_audio_context(27 * SAMPLE_RATE) == 0
+    assert short_audio_context(600 * SAMPLE_RATE) == 0
+
+
+def test_engine_resets_context_and_prompt_between_transcriptions():
+    engine = WhisperEngine()
+    engine.model = FakeModel()
+    sample = np.ones(SAMPLE_RATE, dtype=np.float32) * 0.1
+    engine.transcribe(sample, "da", hints="Aarhus", fast_short_audio=True)
+    assert engine.model.kwargs["audio_ctx"] == 512
+    engine.transcribe(sample, "da", hints="", fast_short_audio=False)
+    assert engine.model.kwargs["audio_ctx"] == 0
+    assert engine.model.kwargs["initial_prompt"] == ""
+
+
+def test_prepare_audio_amplifies_quiet_speech_without_clipping():
+    from openflow.engine import prepare_audio
+    quiet = np.full(SAMPLE_RATE, 0.05, dtype=np.float32)
+    assert np.allclose(prepare_audio(quiet), 0.2)
+    silence = np.full(SAMPLE_RATE, 0.0001, dtype=np.float32)
+    assert np.array_equal(prepare_audio(silence), silence)
+    loud = np.full(SAMPLE_RATE, 0.5, dtype=np.float32)
+    assert np.array_equal(prepare_audio(loud), loud)

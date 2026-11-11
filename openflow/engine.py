@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import math
 import os
 import threading
 import time
@@ -24,6 +25,28 @@ class Transcript:
     probability: float
     seconds: float
     inference_seconds: float
+
+
+def short_audio_context(sample_count: int) -> int:
+    """Reduce encoder work for a single short clip, with 3 seconds of headroom.
+
+    Whisper uses 50 encoder positions per second. Keep longer recordings on the
+    full 30-second window so none of their speech can fall outside the context.
+    """
+    seconds = sample_count / SAMPLE_RATE
+    if seconds > 26:
+        return 0
+    return min(1500, max(512, math.ceil((seconds + 3) * 50 / 32) * 32))
+
+
+def prepare_audio(audio: np.ndarray) -> np.ndarray:
+    """Gently boost quiet input without clipping; do not amplify near-silence."""
+    peak = float(np.max(np.abs(audio)))
+    rms = float(np.sqrt(np.mean(np.square(audio, dtype=np.float64))))
+    if rms >= 0.003 and 0.01 <= peak < 0.2:
+        gain = min(4.0, 0.8 / peak)
+        return np.ascontiguousarray(audio * gain, dtype=np.float32)
+    return audio
 
 
 class WhisperEngine:
@@ -58,7 +81,7 @@ class WhisperEngine:
             return model
 
     def transcribe(self, audio: np.ndarray, language: str, *, hints: str = "",
-                   cancel: threading.Event | None = None) -> Transcript:
+                   cancel: threading.Event | None = None, fast_short_audio: bool = True) -> Transcript:
         with self.lock:
             if self.model is None:
                 raise RuntimeError("The speech model is not ready.")
@@ -74,6 +97,7 @@ class WhisperEngine:
             seconds = len(audio) / SAMPLE_RATE
             if float(np.max(np.abs(audio))) < 0.001:
                 raise ValueError("No audible speech was detected. Check your microphone and its Windows permission.")
+            audio = prepare_audio(audio)
             started = time.monotonic()
             detected, probability = language, 1.0
             if language == "auto":
@@ -91,9 +115,9 @@ class WhisperEngine:
                            single_segment=False, no_timestamps=True, print_progress=False,
                            print_realtime=False, print_timestamps=False, suppress_nst=True,
                            carry_initial_prompt=False,
+                           audio_ctx=short_audio_context(len(audio)) if fast_short_audio else 0,
+                           initial_prompt=hints.strip()[:1000],
                            abort_callback=lambda: bool(cancel and cancel.is_set()))
-            if hints.strip():
-                options["initial_prompt"] = hints.strip()[:1000]
             segments = self.model.transcribe(audio, **options)
             if cancel and cancel.is_set():
                 raise Cancelled("Transcription cancelled")
