@@ -95,6 +95,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          if [ -f startup-progress.txt ]; then python scripts/github_blob.py startup-progress.txt | tee integration-progress-delivery.json; fi
           if [ -f startup-error.txt ]; then python scripts/github_blob.py startup-error.txt | tee integration-output-delivery.json; fi
           if [ -f startup-test-data/openflow.log ]; then python scripts/github_blob.py startup-test-data/openflow.log | tee integration-error-delivery.json; fi
       - name: Check executable size and checksum

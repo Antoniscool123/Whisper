@@ -98,12 +98,19 @@ def main(argv: list[str] | None = None) -> int:
         return render_preview(args.render_preview)
     if args.startup_test:
         os.environ["QT_QPA_PLATFORM"] = "offscreen"
+    def checkpoint(message):
+        if args.startup_test:
+            with open("startup-progress.txt", "a", encoding="utf-8") as stream:
+                stream.write(message + "\n")
+    checkpoint("before logging")
     configure_logging()
+    checkpoint("before imports")
     from PySide6.QtGui import QColor, QFont, QPalette
     from PySide6.QtCore import QLockFile, QTimer
     from PySide6.QtNetwork import QLocalServer, QLocalSocket
     from PySide6.QtWidgets import QApplication, QMessageBox
     from .ui.main_window import MainWindow
+    checkpoint("after imports")
     app = QApplication(sys.argv[:1])
     app.setApplicationName(APP_NAME)
     app.setApplicationVersion(__version__)
@@ -119,6 +126,7 @@ def main(argv: list[str] | None = None) -> int:
                         (QPalette.ToolTipText, "#E8EFF7")):
         palette.setColor(role, QColor(color))
     app.setPalette(palette)
+    checkpoint("before lock")
     name = "openflow-" + hashlib.sha256(str(app_directory()).encode()).hexdigest()[:16]
     lock = QLockFile(str(app_directory() / "openflow.lock"))
     lock.setStaleLockTime(15000)
@@ -135,7 +143,9 @@ def main(argv: list[str] | None = None) -> int:
     server = QLocalServer()
     QLocalServer.removeServer(name)
     server.listen(name)
+    checkpoint("before window")
     window = MainWindow()
+    checkpoint("after window")
     app.setWindowIcon(window.windowIcon())
     server.newConnection.connect(lambda: window.show_window())
     def exception_hook(kind, value, traceback):
@@ -153,9 +163,12 @@ def main(argv: list[str] | None = None) -> int:
         window.show()
     if args.startup_test:
         def finish_startup_test():
+            checkpoint("before quit")
             window.quit()
+            checkpoint("after quit")
             Path(args.startup_test).write_text(json.dumps({"ok": True, "frozen": getattr(sys, "frozen", False)}), encoding="utf-8")
         QTimer.singleShot(500, finish_startup_test)
+    checkpoint("before event loop")
     code = app.exec()
     server.close()
     lock.unlock()
