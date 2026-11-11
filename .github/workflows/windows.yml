@@ -2,7 +2,7 @@ name: Build and test Windows app
 
 on:
   push:
-    branches: [arena/96f0627e-whisper]
+    branches: [arena/b6ec36f3-whisper]
     paths-ignore: ['README.md', 'docs/**', 'LICENSE', 'NOTICE.md', 'THIRD_PARTY_NOTICES.md', 'build-delivery.json']
   workflow_dispatch:
     inputs:
@@ -13,7 +13,7 @@ on:
       release_tag:
         description: Release tag (only used when publish is true)
         type: string
-        default: v1.0.0
+        default: v1.0.1
 
 permissions:
   contents: write
@@ -80,6 +80,15 @@ jobs:
           Get-Content dist/smoke-result.json
           $p = Start-Process -FilePath "$PWD/dist/OpenFlow.exe" -ArgumentList '--render-preview','dist/packaged-preview.png' -WorkingDirectory "$PWD" -Wait -PassThru
           if ($p.ExitCode -ne 0 -or !(Test-Path dist/packaged-preview.png)) { throw "Packaged Qt assets failed to render" }
+      - name: Test normal packaged startup
+        shell: pwsh
+        run: |
+          $env:OPENFLOW_DATA_DIR = "$PWD/startup-test-data"
+          $p = Start-Process -FilePath "$PWD/dist/OpenFlow.exe" -ArgumentList '--startup-test','dist/startup-result.json' -WorkingDirectory "$PWD" -PassThru
+          if (!$p.WaitForExit(60000)) { $p.Kill(); throw "Packaged startup timed out" }
+          if ($p.ExitCode -ne 0 -or !(Test-Path dist/startup-result.json)) { throw "Packaged startup failed: $($p.ExitCode)" }
+          $result = Get-Content dist/startup-result.json -Raw | ConvertFrom-Json
+          if (!$result.ok -or !$result.frozen) { throw "Invalid startup-test result" }
       - name: Check executable size and checksum
         shell: pwsh
         run: |
@@ -123,7 +132,7 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ inputs.release_tag || 'v1.0.0' }}
+          TAG: ${{ inputs.release_tag || 'v1.0.1' }}
         run: |
           [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid release tag'; exit 1; }
           cp dist/SHA256SUMS.txt SHA256SUMS.txt
@@ -131,5 +140,5 @@ jobs:
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release upload "$TAG" dist/OpenFlow.exe SHA256SUMS.txt --clobber --repo "$GITHUB_REPOSITORY"
           else
-            gh release create "$TAG" dist/OpenFlow.exe SHA256SUMS.txt --target "$GITHUB_SHA" --title "OpenFlow 1.0.0 — free local dictation" --notes-file RELEASE.md --repo "$GITHUB_REPOSITORY"
+            gh release create "$TAG" dist/OpenFlow.exe SHA256SUMS.txt --target "$GITHUB_SHA" --title "OpenFlow 1.0.1 — free local dictation" --notes-file RELEASE.md --repo "$GITHUB_REPOSITORY"
           fi
